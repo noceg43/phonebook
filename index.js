@@ -5,12 +5,22 @@ const fs = require('fs')
 
 const filename = './persons.json'
 
-const persons = require(filename);
+const persons = require(filename)
+
+const morgan = require('morgan')
 
 const app = express()
 
 // activate json parser
 app.use(express.json())
+
+// set the token 'body' to return the body of the request
+morgan.token('body', function getBody(req) {
+    return JSON.stringify(req.body)
+})
+
+app.use(morgan(':method :url :status :total-time[4] ms :body'))
+
 
 // routes
 
@@ -65,7 +75,7 @@ app.post('/api/persons', (request, response) => {
         return response.status(400).json({
             error: 'name must be unique'
         })
-     }
+    }
 
     const person = {
         name: body.name,
