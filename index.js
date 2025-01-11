@@ -18,6 +18,10 @@ app.use(cors())
 // activate json parser
 app.use(express.json())
 
+// on the dist folder, we have the frontend
+// when the server receives a GET request this middleware is used
+app.use(express.static('frontend/dist'))
+
 // another middleware used to log
 const requestLogger = (request, response, next) => {
     // execute this before moving to the next middleware
