@@ -1,5 +1,6 @@
 // do not use ES module it's not suggested in this course
 const express = require('express')
+const cors = require('cors')
 
 const fs = require('fs')
 
@@ -11,8 +12,23 @@ const morgan = require('morgan')
 
 const app = express()
 
+// activate cors
+app.use(cors())
+
 // activate json parser
 app.use(express.json())
+
+// another middleware used to log
+const requestLogger = (request, response, next) => {
+    // execute this before moving to the next middleware
+    console.log('Method:', request.method)
+    console.log('Path:  ', request.path)
+    console.log('Body:  ', request.body)
+    console.log('---')
+    // move to the next middleware
+    next()
+}
+app.use(requestLogger)
 
 // set the token 'body' to return the body of the request
 morgan.token('body', function getBody(req) {
@@ -93,7 +109,7 @@ app.get('/info', (request, response) => {
 })
 
 
-const PORT = 3001
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`)
 })
