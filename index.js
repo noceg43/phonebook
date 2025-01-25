@@ -1,6 +1,7 @@
 // do not use ES module it's not suggested in this course
 const express = require('express')
 const cors = require('cors')
+const Person = require('./models/person')
 
 const fs = require('fs')
 
@@ -45,41 +46,43 @@ app.use(morgan(':method :url :status :total-time[4] ms :body'))
 // routes
 
 app.get('/api/persons', (request, response) => {
-    response.json(persons)
-})
+    Person.find({}).then(persons => {
+        response.json(persons)
+      })})
 
 app.get('/api/persons/:id', (request, response) => {
     const id = request.params.id
-    const person = persons.find(note => note.id === id)
-
+    Person.findById(id).then(
+        person => {
     // return 404 if note is not found
     if (person) {
         response.json(person)
     } else {
+        console.log(error)
         response.status(404).end()
+    }        
     }
+    ).catch(error => {
+        console.log(error)
+        response.status(404).end()
+    })
 })
 
 
-const updatePersons = (newContent) => fs.writeFileSync(filename, JSON.stringify(newContent))
 
 app.delete('/api/persons/:id', (request, response) => {
     const id = request.params.id
-    const person = persons.find(note => note.id === id)
 
-    // return 404 if note is not found
-    if (person) {
-        newContent = persons.filter(person => person.id !== id)
-        updatePersons(newContent)
-        response.json(person)
-    } else {
-        response.status(404).end()
-    }
+   t = Person.findByIdAndDelete(id).then(
+    (result ) => response.json(result)
+    ).catch(error => {
+        console.log(error)
+        response.status(404).end() 
+    })
+        console.log(t)
+
 })
 
-const generateId = () => {
-    return Math.floor(Math.random() * 1000000)
-}
 
 app.post('/api/persons', (request, response) => {
     const body = request.body
@@ -91,21 +94,11 @@ app.post('/api/persons', (request, response) => {
         })
     }
 
-    if (persons.find(person => body.name == person.name)) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
+    const person =  new Person({ name: body.name, number: body.number })
 
-    const person = {
-        name: body.name,
-        number: body.number,
-        id: generateId(),
-    }
-
-    updatePersons(persons.concat(person))
-
-    response.json(person)
+    person.save().then(savedPerson => {
+    response.json(savedPerson)
+    })
 })
 
 app.get('/info', (request, response) => {
